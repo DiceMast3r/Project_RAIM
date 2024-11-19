@@ -15,9 +15,9 @@ output_filename = 'F:\\Project_RAIM\\Pre-Project\\data\\POS.csv'
 # Date and time for which the position is to be computed (UTC + 7)
 year = 2024
 month = 11
-day = 6
-hour = 0
-minute = 5
+day = 19
+hour = 15
+minute = 30
 second = 0
 
 # Convert UTC+7 to UTC

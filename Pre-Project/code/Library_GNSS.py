@@ -99,6 +99,22 @@ def compute_positions(satellites, year, month, day, hour, minute, second):
             results.append((name, None, None, None))
     return results
 
+
+def compute_positions_ecef(satellites, year, month, day, hour, minute, second):
+    """
+    Compute the position of each satellite at the given date and time.
+    """
+    jd, fr = jday(year, month, day, hour, minute, second)
+    results = []
+    for name, satellite in satellites:
+        e, r, v = satellite.sgp4(jd, fr)
+        if e == 0:
+            r_ecef = eci_to_ecef(r, jd, fr)
+            results.append((name, r_ecef[0], r_ecef[1], r_ecef[2]))
+        else:
+            results.append((name, None, None, None))
+    return results
+
 def save_positions_to_file(positions, output_filename, year, month, day, hour, minute, second):
     """
     Save the computed positions to a CSV file.
@@ -136,3 +152,40 @@ def save_positions_to_file(positions, output_filename, year, month, day, hour, m
                     'Second': second
                 })
 
+
+def save_position_to_file_ecef(positions, output_filename, year, month, day, hour, minute, second):
+    """
+    Save the computed positions to a CSV file.
+    """
+    with open(output_filename, 'w', newline='') as csvfile:
+        fieldnames = ['Satellite', 'X', 'Y', 'Z', 'Year', 'Month', 'Day', 'Hour', 'Minute', 'Second']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for name, x, y, z in positions:
+            if x is not None:
+                writer.writerow({
+                    'Satellite': name, 
+                    'X': x, 
+                    'Y': y, 
+                    'Z': z,
+                    'Year': year,
+                    'Month': month,
+                    'Day': day,
+                    'Hour': hour,
+                    'Minute': minute,
+                    'Second': second
+                })
+            else:
+                writer.writerow({
+                    'Satellite': name, 
+                    'X': 'Error', 
+                    'Y': 'Error', 
+                    'Z': 'Error',
+                    'Year': year,
+                    'Month': month,
+                    'Day': day,
+                    'Hour': hour,
+                    'Minute': minute,
+                    'Second': second
+                })

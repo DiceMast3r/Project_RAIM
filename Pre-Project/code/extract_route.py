@@ -20,30 +20,48 @@ if pre_tag:
     print(waypoint_data)
     print("\nParsing Waypoints...\n")
 
-    # Updated Regex patterns for latitude and longitude (handle degree symbols, decimals, etc.)
-    lat_pattern = re.compile(r"N(\d{1,2}(?:\.\d+)?).*?")  # Matches N12.34 or N12°34
-    lon_pattern = re.compile(r"E(\d{1,3}(?:\.\d+)?).*?")  # Matches E100.12 or E100°12
+    # Updated Regex pattern for DMS format
+    dms_pattern = re.compile(
+        r"(?P<lat_dir>[NS])(?P<lat_deg>\d{1,2})°(?P<lat_min>\d{1,2})'(?P<lat_sec>\d{1,2}\.\d+)?\"?\s+"
+        r"(?P<lon_dir>[EW])(?P<lon_deg>\d{1,3})°(?P<lon_min>\d{1,2})'(?P<lon_sec>\d{1,2}\.\d+)?\"?"
+    )
 
     # Split the text into lines and parse each line for waypoints
     for line in waypoint_data.splitlines():
-        print(f"Processing Line: {line}")  # Debugging: Print each line
+        #print(f"Processing Line: {line}")  # Debugging: Print each line
 
-        # Match latitude and longitude using regex
-        lat_match = lat_pattern.search(line)
-        lon_match = lon_pattern.search(line)
+        # Match latitude and longitude in DMS format
+        match = dms_pattern.search(line)
+        if match:
+            # Extract the DMS components
+            lat_dir = match.group("lat_dir")
+            lat_deg = int(match.group("lat_deg"))
+            lat_min = int(match.group("lat_min"))
+            lat_sec = float(match.group("lat_sec")) if match.group("lat_sec") else 0
 
-        if lat_match and lon_match:
-            # Extract name (first column) and coordinates
+            lon_dir = match.group("lon_dir")
+            lon_deg = int(match.group("lon_deg"))
+            lon_min = int(match.group("lon_min"))
+            lon_sec = float(match.group("lon_sec")) if match.group("lon_sec") else 0
+
+            # Convert DMS to decimal degrees
+            latitude = lat_deg + lat_min / 60 + lat_sec / 3600
+            if lat_dir == "S":
+                latitude = -latitude
+
+            longitude = lon_deg + lon_min / 60 + lon_sec / 3600
+            if lon_dir == "W":
+                longitude = -longitude
+
+            # Extract waypoint name (assume it's the first word in the line)
             parts = line.split()
-            name = parts[0]  # Assume the first column is always the waypoint name
-            latitude = lat_match.group(1).replace("°", "").strip()
-            longitude = lon_match.group(1).replace("°", "").strip()
+            name = parts[0]
 
             # Append to waypoints list
             waypoints.append({
                 "name": name,
-                "latitude": latitude,
-                "longitude": longitude
+                "latitude": round(latitude, 6),  # Round to 6 decimal places
+                "longitude": round(longitude, 6)  # Round to 6 decimal places
             })
             print(f"Extracted Waypoint: {name}, Lat: {latitude}, Lon: {longitude}")  # Debugging
         else:

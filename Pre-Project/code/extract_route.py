@@ -1,7 +1,10 @@
 import re
 from bs4 import BeautifulSoup
 
-# Load the HTML file (replace 'response.html' with your actual file name)
+""" This script extracts waypoints from a HTML file containing route data. into a CSV file. """
+
+
+# Load the HTML file
 with open("F:\\Project_RAIM\\Pre-Project\\data\\routefinder_response.html", "r", encoding="utf-8") as file:
     html_content = file.read()
 

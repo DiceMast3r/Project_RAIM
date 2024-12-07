@@ -63,14 +63,24 @@ if pre_tag:
                 "latitude": round(latitude, 6),  # Round to 6 decimal places
                 "longitude": round(longitude, 6)  # Round to 6 decimal places
             })
-            print(f"Extracted Waypoint: {name}, Lat: {latitude}, Lon: {longitude}")  # Debugging
+            #print(f"Extracted Waypoint: {name}, Lat: {latitude}, Lon: {longitude}")  # Debugging
         else:
             print(f"Skipping Line: {line} (No valid coordinates found)")  # Log skipped lines
 
     # Output the extracted waypoints
     print("\nExtracted Waypoints:")
     for wp in waypoints:
-        print(f"Name: {wp['name']}, Latitude: {wp['latitude']}, Longitude: {wp['longitude']}")
-
+        print(f"Name: {wp['name']}, Latitude: {wp['latitude']}, Longitude: {wp['longitude']}")     
 else:
-    print("No <pre> tag found in the HTML!")
+    print("No <pre> tag found in the HTML content")
+
+# Save the extracted waypoints to a csv file
+with open("F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv", "w", newline="") as file:
+    # Write the header
+    file.write("Name,Latitude,Longitude\n")
+
+    # Write each waypoint as a line in the csv file
+    for wp in waypoints:
+        file.write(f"{wp['name']},{wp['latitude']},{wp['longitude']}\n")
+
+    print("\nExtracted waypoints saved to 'extracted_waypoints.csv'")

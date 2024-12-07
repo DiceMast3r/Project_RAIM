@@ -84,8 +84,20 @@ def filter_satellites(satellite_file, output_file, distance_threshold):
 
 
 
-# File path to save the TLE data
-file_path = 'F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt'
+debug_machine = 1 # 1 = PC, 2 = Laptop
+
+if debug_machine == 1:
+    file_path = 'F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt' # File path to save the TLE data
+    output_filename = 'F:\\Project_RAIM\\Pre-Project\\data\\POS.csv' # File path to save the position data
+    output_filename_ecef = 'F:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv'
+elif debug_machine == 2:
+    file_path = 'D:\\Project_RAIM\\Pre-Project\\data\\TLE.txt' # File path to save the TLE data
+    output_filename = 'D:\\Project_RAIM\\Pre-Project\\data\\POS.csv' # File path to save the position data
+    output_filename_ecef = 'D:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv'
+else:
+    print("Invalid debug machine setting.")
+    exit()
+
 
 #GNSS.fetch_tle_data_txt(file_path)
 
@@ -95,15 +107,12 @@ sat_obj = GNSS.read_tle_file(file_path)
 
 print("TLE data read from file.")
 
-output_filename = 'F:\\Project_RAIM\\Pre-Project\\data\\POS.csv'
-output_filename_ecef = 'F:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv'
-
 # Date and time for which the position is to be computed (UTC + 7)
 year = 2024
-month = 11
-day = 19
+month = 12
+day = 7
 hour = 17
-minute = 0
+minute = 55
 second = 0
 
 # Convert UTC+7 to UTC

@@ -109,10 +109,10 @@ print("TLE data read from file.")
 
 # Date and time for which the position is to be computed (UTC + 7)
 year = 2024
-month = 11
-day = 19
+month = 12
+day = 7
 hour = 17
-minute = 0
+minute = 55
 second = 0
 
 # Convert UTC+7 to UTC

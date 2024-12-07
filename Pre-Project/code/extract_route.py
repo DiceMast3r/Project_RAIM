@@ -60,8 +60,8 @@ if pre_tag:
             # Append to waypoints list
             waypoints.append({
                 "name": name,
-                "latitude": round(latitude, 6),  # Round to 6 decimal places
-                "longitude": round(longitude, 6)  # Round to 6 decimal places
+                "latitude": round(latitude, 8),  # Round to 6 decimal places
+                "longitude": round(longitude, 8)  # Round to 6 decimal places
             })
             #print(f"Extracted Waypoint: {name}, Lat: {latitude}, Lon: {longitude}")  # Debugging
         else:

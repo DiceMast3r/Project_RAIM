@@ -84,7 +84,7 @@ def filter_satellites(satellite_file, output_file, distance_threshold):
 
 
 
-debug_machine = 1 # 1 = PC, 2 = Laptop
+debug_machine = 2 # 1 = PC, 2 = Laptop
 
 if debug_machine == 1:
     file_path = 'F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt' # File path to save the TLE data

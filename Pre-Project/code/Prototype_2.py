@@ -85,7 +85,7 @@ def filter_satellites(satellite_file, output_file, distance_threshold):
 
 
 # File path to save the TLE data
-file_path = 'F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt'
+file_path = 'D:\\Project_RAIM\\Pre-Project\\data\\TLE.txt'
 
 #GNSS.fetch_tle_data_txt(file_path)
 
@@ -95,15 +95,15 @@ sat_obj = GNSS.read_tle_file(file_path)
 
 print("TLE data read from file.")
 
-output_filename = 'F:\\Project_RAIM\\Pre-Project\\data\\POS.csv'
-output_filename_ecef = 'F:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv'
+output_filename = 'D:\\Project_RAIM\\Pre-Project\\data\\POS.csv'
+output_filename_ecef = 'D:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv'
 
 # Date and time for which the position is to be computed (UTC + 7)
 year = 2024
-month = 11
-day = 19
+month = 12
+day = 4
 hour = 17
-minute = 0
+minute = 15
 second = 0
 
 # Convert UTC+7 to UTC
@@ -123,9 +123,9 @@ position_data = GNSS.compute_positions(sat_obj, year, month, day, hour_utc, minu
 
 GNSS.save_positions_to_file(position_data, output_filename, year, month, day, hour_utc, minute, second)
 
-satellite_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS.csv"
-output_file = "F:\\Project_RAIM\\Pre-Project\\data\\DISTANCE.csv"
-filter_output_file = "F:\\Project_RAIM\\Pre-Project\\data\\CLOSE.csv"
+satellite_file = "D:\\Project_RAIM\\Pre-Project\\data\\POS.csv"
+output_file = "D:\\Project_RAIM\\Pre-Project\\data\\DISTANCE.csv"
+filter_output_file = "D:\\Project_RAIM\\Pre-Project\\data\\CLOSE.csv"
 
 calculate_and_save_distances(receiver_lat, receiver_lon, receiver_alt, satellite_file, output_file)
 filter_satellites(output_file, filter_output_file, 3000)

@@ -6,6 +6,8 @@
 *.txt
 *.html
 *.csv
+*.png
+*.docx
 
 Pre-Project/data/TLE.txt
 Pre-Project/data/CLOSE.csv

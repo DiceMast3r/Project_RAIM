@@ -1,10 +1,9 @@
 import folium
 import csv
 import math
-
+from datetime import datetime, timedelta
 
 # Function to calculate the distance between two points given their coordinates
-
 def calculate_distance(start, end):
     # Constants for Earth radius and conversion factor from meters to kilometers
     EARTH_RADIUS = 6371000  # in meters
@@ -26,8 +25,20 @@ def calculate_distance(start, end):
 
     return distance * METERS_TO_KM
 
+# Function to predict the arrival time at each waypoint
+def predict_arrival_times(waypoints, speed_kmh, start_time):
+    arrival_times = [start_time]
+    for i in range(len(waypoints) - 1):
+        start = waypoints[i][1], waypoints[i][2]
+        end = waypoints[i + 1][1], waypoints[i + 1][2]
+        distance = calculate_distance(start, end)
+        travel_time = distance / speed_kmh  # in hours
+        arrival_time = arrival_times[-1] + timedelta(hours=travel_time)
+        arrival_times.append(arrival_time)
+    return arrival_times
+
 # File path to the CSV file
-file_path = "D:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
+file_path = "F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
 
 # List to store the waypoints
 waypoints = []
@@ -40,7 +51,6 @@ with open(file_path, mode='r') as file:
     for row in reader:
         name, latitude, longitude = row
         waypoints.append((name, float(latitude), float(longitude)))
-        
 
 # Create a map centered at the given latitude and longitude
 map_center = [13.7563, 100.5018]
@@ -54,19 +64,25 @@ map_waypoint = folium.Map(location=map_center, zoom_start=map_zoom)
 for name, latitude, longitude in waypoints:
     folium.Marker(location=[latitude, longitude], popup=name).add_to(map_waypoint)
 
-
-# draw lines between the waypoints
+# Draw lines between the waypoints
 for i in range(len(waypoints) - 1):
     start = waypoints[i][1], waypoints[i][2]
     end = waypoints[i + 1][1], waypoints[i + 1][2]
     folium.PolyLine(locations=[start, end], color='red').add_to(map_waypoint)
 
-# calculate the distance between the waypoints and show when the user clicks on the marker
+# Predict arrival times
+speed_kmh = 600.0  # Example speed in km/h
+start_time = datetime.now()
+arrival_times = predict_arrival_times(waypoints, speed_kmh, start_time)
+
+# Calculate the distance between the waypoints and show when the user clicks on the marker
 for i in range(len(waypoints) - 1):
     start = waypoints[i][1], waypoints[i][2]
     end = waypoints[i + 1][1], waypoints[i + 1][2]
     distance = calculate_distance(start, end)
-    popup_content = f"{waypoints[i][0]}<br>Distance to next point: {distance:.2f} km"
-    folium.Marker(location=start, popup=popup_content).add_to(map_waypoint)
+    arrival_time = arrival_times[i].strftime("%Y-%m-%d %H:%M:%S")
+    popup_content = f"{waypoints[i][0]}<br>Distance to next point: {distance:.2f} km<br>Arrival time: {arrival_time}"
+    popup = folium.Popup(popup_content, max_width=300)  # Adjust the max_width as needed
+    folium.Marker(location=start, popup=popup).add_to(map_waypoint)
 
 map_waypoint.show_in_browser()

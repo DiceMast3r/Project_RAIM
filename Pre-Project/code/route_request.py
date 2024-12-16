@@ -13,7 +13,7 @@ headers = {
 payload = {
     "id1": "VTBS",
     "ic1": "",
-    "id2": "RJAA",
+    "id2": "WSSS",
     "ic2": "",
     "minalt": "FL330",
     "maxalt": "FL390",

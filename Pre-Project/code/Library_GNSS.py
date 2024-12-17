@@ -109,7 +109,15 @@ def NEU_to_AZEL(n, e, u):
     r = np.sqrt(x**2 + y**2 + z**2)
     az = np.arctan2(x, y)
     el = np.arcsin(z / r)
-    return np.degrees(az), np.degrees(el)
+    
+    # Convert azimuth and elevation to degrees
+    az_deg = np.degrees(az)
+    el_deg = np.degrees(el)
+    
+    # Normalize azimuth to be within 0° to 360°
+    az_deg = (az_deg + 360) % 360
+    
+    return az_deg, el_deg
 
 
 def read_tle_file(filename):

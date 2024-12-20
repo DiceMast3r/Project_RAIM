@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 
 # Load the HTML file
-with open("F:\\Project_RAIM\\Pre-Project\\data\\routefinder_response.html", "r", encoding="utf-8") as file:
+with open("C:\\งาน\\Project_RAIM\\Pre-Project\\data\\routefinder_response.html", "r", encoding="utf-8") as file:
     html_content = file.read()
 
 # Parse the HTML using BeautifulSoup
@@ -78,7 +78,7 @@ else:
     print("No <pre> tag found in the HTML content")
 
 # Save the extracted waypoints to a csv file
-with open("F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv", "w", newline="") as file:
+with open("C:\\งาน\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv", "w", newline="") as file:
     # Write the header
     file.write("Name,Latitude,Longitude\n")
 

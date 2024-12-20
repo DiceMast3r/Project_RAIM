@@ -135,6 +135,7 @@ GNSS.save_positions_to_file(position_data, output_filename, year, month, day, ho
 satellite_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS.csv"
 output_file = "F:\\Project_RAIM\\Pre-Project\\data\\DISTANCE.csv"
 filter_output_file = "F:\\Project_RAIM\\Pre-Project\\data\\CLOSE.csv"
+satellite_file = "C:\\งาน\\Project_RAIM\\Pre-Project\\data\\POS.csv"
 
 calculate_and_save_distances(receiver_lat, receiver_lon, receiver_alt, satellite_file, output_file)
 filter_satellites(output_file, filter_output_file, 3000)

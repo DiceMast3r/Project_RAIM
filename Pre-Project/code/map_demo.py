@@ -27,7 +27,7 @@ def calculate_distance(start, end):
     return distance * METERS_TO_KM
 
 # File path to the CSV file
-file_path = "F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
+file_path = "C:\\งาน\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
 
 # List to store the waypoints
 waypoints = []

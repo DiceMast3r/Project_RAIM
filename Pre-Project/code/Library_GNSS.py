@@ -184,6 +184,16 @@ def compute_positions_neu(ecef_file, origin_lat, origin_lon):
             positions.append((sat_id, neu[0], neu[1], neu[2]))
     return positions
 
+def compute_positions_neu_direct(ecef_list, origin_lat, origin_lon):
+    """
+    Compute the local North-East-Up (NEU) coordinates of each satellite.
+    """
+    positions = []
+    for sat_id, x, y, z in ecef_list:
+        neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon)
+        positions.append((sat_id, neu[0], neu[1], neu[2]))
+    return positions
+
 
 def compute_positions_azel(neu_file):
     """
@@ -198,6 +208,16 @@ def compute_positions_azel(neu_file):
             sat_id, n, e, u = row[0], float(row[1]), float(row[2]), float(row[3])
             az, el = NEU_to_AZEL(n, e, u)
             positions.append((sat_id, az, el))
+    return positions
+
+def compute_positions_azel_direct(neu_list):
+    """
+    Compute the Azimuth-Elevation (AZEL) angles of each satellite.
+    """
+    positions = []
+    for sat_id, n, e, u in neu_list:
+        az, el = NEU_to_AZEL(n, e, u)
+        positions.append((sat_id, az, el))
     return positions
 
 

@@ -36,16 +36,17 @@ sat_obj = GNSS.read_tle_file(file_path)
 
 print("TLE data read from file.")
 
+latlon_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS.csv"
 ecef_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv"
 neu_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS_NEU.csv"
 azel_file = "F:\\Project_RAIM\\Pre-Project\\data\\AZEL.csv"
 
 # Date and time for which the position is to be computed (UTC + 7)
 year = 2024
-month = 11
-day = 19
-hour = 16
-minute = 20
+month = 12
+day = 22
+hour = 20
+minute = 33
 second = 0
 
 # Convert UTC+7 to UTC
@@ -54,10 +55,13 @@ if hour_utc < 0:
     hour_utc += 24
     day -= 1
 
-origin_lat = 13.683529
-origin_lon = 100.619786
-receiver_alt = 200
+origin_lat = 13.75
+origin_lon = 100.50
+receiver_alt = 20
 
+
+position_data_latlon = GNSS.compute_positions(sat_obj, year, month, day, hour_utc, minute, second)
+GNSS.save_positions_to_file(position_data_latlon, latlon_file, year, month, day, hour_utc, minute, second)
 
 position_data_ecef = GNSS.compute_positions_ecef(sat_obj, year, month, day, hour_utc, minute, second)
 

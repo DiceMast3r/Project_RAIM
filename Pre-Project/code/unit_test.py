@@ -10,16 +10,19 @@ def ecef_to_neu(ecef_coords, ref_coords):
 
     Parameters:
     ecef_coords : tuple
-        ECEF coordinates (X, Y, Z) in meters.
+        ECEF coordinates (X, Y, Z) in kilometers.
     ref_coords : tuple
         Reference geodetic coordinates (latitude, longitude, height) in degrees and meters.
 
     Returns:
     neu_coords : tuple
-        NEU coordinates (North, East, Up) in meters.
+        NEU coordinates (North, East, Up) in kilometers.
     """
     # Extract ECEF coordinates
     X, Y, Z = ecef_coords
+    X = X * 1000 # Convert to meters
+    Y = Y * 1000
+    Z = Z * 1000
 
     # Extract reference geodetic coordinates (latitude, longitude in degrees)
     lat_ref, lon_ref, h_ref = ref_coords
@@ -52,6 +55,8 @@ def ecef_to_neu(ecef_coords, ref_coords):
 
     # Compute NEU coordinates
     neu_coords = R @ delta_ecef
+    # Convert to kilometers
+    neu_coords = neu_coords / 1000
 
     return tuple(neu_coords)
 
@@ -88,7 +93,7 @@ def neu_to_az_el(neu_coords):
 # Example usage
 if __name__ == "__main__":
     # Example ECEF coordinates (meters)
-    ecef_coords = (-12668213.300141417, 23191267.88301844, -464141.21054881474)
+    ecef_coords = (-18464.679145510465,7282.455658807237,17783.183271204365)
 
     # Reference geodetic coordinates (latitude, longitude in degrees, height in meters)
     ref_coords = (13.75, 100.5, 20.0) 

@@ -75,49 +75,92 @@ def ecef_to_latlon(r_ecef):
     return lat, lon, alt
 
 
-def ECEF_to_NEU(x, y, z, lat, lon):
+def ECEF_to_NEU(x, y, z, lat, lon, height):
     """
-    Convert ECEF coordinates to local North-East-Up (NEU) coordinates.
+    Convert ECEF coordinates to NEU coordinates.
+
+    Parameters:
+    ecef_coords : tuple
+        ECEF coordinates (X, Y, Z) in kilometers.
+    ref_coords : tuple
+        Reference geodetic coordinates (latitude, longitude, height) in degrees and meters.
+
+    Returns:
+    neu_coords : tuple
+        NEU coordinates (North, East, Up) in kilometers.
     """
-    lat_rad = np.radians(lat)
-    lon_rad = np.radians(lon)
+    # Extract ECEF coordinates
+    X, Y, Z = x, y, z
+    X = X * 1000 # Convert to meters
+    Y = Y * 1000
+    Z = Z * 1000
 
-    cos_lat = np.cos(lat_rad)
-    sin_lat = np.sin(lat_rad)
-    cos_lon = np.cos(lon_rad)
-    sin_lon = np.sin(lon_rad)
+    # Extract reference geodetic coordinates (latitude, longitude in degrees)
+    lat_ref, lon_ref, h_ref = lat, lon, height
 
-    # Rotation matrix from ECEF to ENU
-    R = np.array(
-        [
-            [-sin_lon, cos_lon, 0],
-            [-sin_lat * cos_lon, -sin_lat * sin_lon, cos_lat],
-            [cos_lat * cos_lon, cos_lat * sin_lon, sin_lat],
-        ]
-    )
+    # Convert latitude and longitude to radians
+    lat_ref_rad = np.radians(lat_ref)
+    lon_ref_rad = np.radians(lon_ref)
 
-    r = np.array([x, y, z])
-    neu = np.dot(R, r)
-    return neu
+    # Compute the rotation matrix from ECEF to NEU
+    R = np.array([
+        [-np.sin(lat_ref_rad) * np.cos(lon_ref_rad), -np.sin(lat_ref_rad) * np.sin(lon_ref_rad), np.cos(lat_ref_rad)],
+        [-np.sin(lon_ref_rad), np.cos(lon_ref_rad), 0],
+        [np.cos(lat_ref_rad) * np.cos(lon_ref_rad), np.cos(lat_ref_rad) * np.sin(lon_ref_rad), np.sin(lat_ref_rad)]
+    ])
+
+    # Reference position in ECEF (X_ref, Y_ref, Z_ref)
+    a = 6378137.0  # Earth's semi-major axis (meters)
+    f = 1 / 298.257223563  # Earth's flattening
+    e2 = 2 * f - f ** 2  # Square of eccentricity
+
+    # Compute N (radius of curvature in the prime vertical)
+    N = a / np.sqrt(1 - e2 * np.sin(lat_ref_rad) ** 2)
+
+    X_ref = (N + h_ref) * np.cos(lat_ref_rad) * np.cos(lon_ref_rad)
+    Y_ref = (N + h_ref) * np.cos(lat_ref_rad) * np.sin(lon_ref_rad)
+    Z_ref = (N * (1 - e2) + h_ref) * np.sin(lat_ref_rad)
+
+    # Compute the difference in ECEF coordinates
+    delta_ecef = np.array([X - X_ref, Y - Y_ref, Z - Z_ref])
+
+    # Compute NEU coordinates
+    neu_coords = R @ delta_ecef # @ = Matrix multiplication
+    # Convert to kilometers
+    neu_coords = neu_coords / 1000
+
+    return tuple(neu_coords)
 
 
 def NEU_to_AZEL(n, e, u):
     """
-    Convert local North-East-Up (NEU) coordinates to Azimuth-Elevation (AZEL) angles.
+    Convert NEU coordinates to Azimuth and Elevation.
+
+    Parameters:
+    neu_coords : tuple
+        NEU coordinates (North, East, Up) in meters.
+
+    Returns:
+    azimuth : float
+        Azimuth angle in degrees.
+    elevation : float
+        Elevation angle in degrees.
     """
-    x, y, z = n, e, u
-    r = np.sqrt(x**2 + y**2 + z**2)
-    az = np.arctan2(x, y)
-    el = np.arcsin(z / r)
-    
-    # Convert azimuth and elevation to degrees
-    az_deg = np.degrees(az)
-    el_deg = np.degrees(el)
-    
-    # Normalize azimuth to be within 0° to 360°
-    az_deg = (az_deg + 360) % 360
-    
-    return az_deg, el_deg
+    # Extract NEU components
+    N, E, U = n, e, u
+
+    # Compute Azimuth (in radians)
+    azimuth_rad = np.arctan2(E, N)
+    azimuth = np.degrees(azimuth_rad)
+    if azimuth < 0:
+        azimuth += 360
+
+    # Compute Elevation (in radians)
+    horizontal_distance = np.sqrt(N**2 + E**2)
+    elevation_rad = np.arctan2(U, horizontal_distance)
+    elevation = np.degrees(elevation_rad)
+
+    return azimuth, elevation
 
 
 def read_tle_file(filename):
@@ -169,7 +212,7 @@ def compute_positions_ecef(satellites, year, month, day, hour, minute, second):
     return results
 
 
-def compute_positions_neu(ecef_file, origin_lat, origin_lon):
+def compute_positions_neu(ecef_file, origin_lat, origin_lon, origin_alt):
     """
     Compute the local North-East-Up (NEU) coordinates of each satellite.
     """
@@ -180,17 +223,17 @@ def compute_positions_neu(ecef_file, origin_lat, origin_lon):
 
         for row in reader:
             sat_id, x, y, z = row[0], float(row[1]), float(row[2]), float(row[3])
-            neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon)
+            neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon, origin_alt)
             positions.append((sat_id, neu[0], neu[1], neu[2]))
     return positions
 
-def compute_positions_neu_direct(ecef_list, origin_lat, origin_lon):
+def compute_positions_neu_direct(ecef_list, origin_lat, origin_lon, origin_alt):
     """
     Compute the local North-East-Up (NEU) coordinates of each satellite.
     """
     positions = []
     for sat_id, x, y, z in ecef_list:
-        neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon)
+        neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon, origin_alt)
         positions.append((sat_id, neu[0], neu[1], neu[2]))
     return positions
 
@@ -331,12 +374,12 @@ def save_position_to_file_ecef(
                 )
 
 
-def save_positions_to_file_neu(positions, output_filename, origin_lat, origin_lon):
+def save_positions_to_file_neu(positions, output_filename, origin_lat, origin_lon, origin_alt):
     """
     Save the computed NEU positions to a CSV file.
     """
     with open(output_filename, "w", newline="") as csvfile:
-        fieldnames = ["Satellite", "North", "East", "Up", "Origin Latitude", "Origin Longitude"]
+        fieldnames = ["Satellite", "North", "East", "Up", "Origin Latitude", "Origin Longitude", "Origin Altitude"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()
@@ -348,7 +391,8 @@ def save_positions_to_file_neu(positions, output_filename, origin_lat, origin_lo
                     "East": e,
                     "Up": u,
                     "Origin Latitude": origin_lat,
-                    "Origin Longitude": origin_lon
+                    "Origin Longitude": origin_lon,
+                    "Origin Altitude": origin_alt
                 }
             )
 

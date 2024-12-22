@@ -45,9 +45,9 @@ azel_file = "F:\\Project_RAIM\\Pre-Project\\data\\AZEL.csv"
 year = 2024
 month = 12
 day = 22
-hour = 20
-minute = 33
-second = 0
+hour = 23
+minute = 25
+second = 5
 
 # Convert UTC+7 to UTC
 hour_utc = hour - 7
@@ -67,9 +67,9 @@ position_data_ecef = GNSS.compute_positions_ecef(sat_obj, year, month, day, hour
 
 GNSS.save_position_to_file_ecef(position_data_ecef, ecef_file, year, month, day, hour_utc, minute, second)
 
-position_NEU = GNSS.compute_positions_neu(ecef_file, origin_lat, origin_lon)
+position_NEU = GNSS.compute_positions_neu(ecef_file, origin_lat, origin_lon, receiver_alt)
 
-GNSS.save_positions_to_file_neu(position_NEU, neu_file, origin_lat, origin_lon)
+GNSS.save_positions_to_file_neu(position_NEU, neu_file, origin_lat, origin_lon, receiver_alt)
 
 az_el = GNSS.compute_positions_azel(neu_file)
 

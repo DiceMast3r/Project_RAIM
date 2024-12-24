@@ -1,5 +1,3 @@
-import math
-import csv
 import Library_GNSS as GNSS
 
 tle_file_path = "F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt"

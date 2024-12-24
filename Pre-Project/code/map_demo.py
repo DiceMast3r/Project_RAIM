@@ -74,6 +74,7 @@ for i in range(len(waypoints) - 1):
 speed_kmh = 600.0  # Example speed in km/h
 start_time = datetime.now()
 arrival_times = predict_arrival_times(waypoints, speed_kmh, start_time)
+print("Predicted arrival times:")
 
 # Calculate the distance between the waypoints and show when the user clicks on the marker
 for i in range(len(waypoints) - 1):
@@ -85,4 +86,4 @@ for i in range(len(waypoints) - 1):
     popup = folium.Popup(popup_content, max_width=300)  # Adjust the max_width as needed
     folium.Marker(location=start, popup=popup).add_to(map_waypoint)
 
-map_waypoint.show_in_browser()
+#map_waypoint.show_in_browser()

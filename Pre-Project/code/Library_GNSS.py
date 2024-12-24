@@ -50,6 +50,37 @@ def eci_to_ecef(r, jd, fr):
     return r_ecef
 
 
+def latlon_to_ecef(lat, lon, alt=0):
+    """
+    Convert latitude, longitude, and altitude to ECEF coordinates.
+
+    Parameters:
+        lat (float): Latitude in degrees.
+        lon (float): Longitude in degrees.
+        alt (float, optional): Altitude in meters above the WGS84 ellipsoid. Default is 0.
+
+    Returns:
+        tuple: A tuple (x, y, z) representing ECEF coordinates in meters.
+    """
+    # WGS84 ellipsoid constants
+    a = 6378137.0  # semi-major axis in meters
+    e2 = 6.69437999014e-3  # square of eccentricity
+
+    # Convert latitude and longitude to radians
+    lat_rad = np.radians(lat)
+    lon_rad = np.radians(lon)
+
+    # Calculate the prime vertical radius of curvature
+    N = a / np.sqrt(1 - e2 * np.sin(lat_rad) ** 2)
+
+    # Calculate ECEF coordinates
+    x = (N + alt) * np.cos(lat_rad) * np.cos(lon_rad)
+    y = (N + alt) * np.cos(lat_rad) * np.sin(lon_rad)
+    z = (N * (1 - e2) + alt) * np.sin(lat_rad)
+
+    return x, y, z
+
+
 def ecef_to_latlon(r_ecef):
     """
     Convert ECEF coordinates to geodetic latitude, longitude, and altitude.
@@ -415,3 +446,85 @@ def save_positions_to_file_azel(positions, output_filename, origin_lat, origin_l
                     "Origin Longitude": origin_lon
                 }
             )
+
+
+def calculate_distance_and_unit_vector(sat, rec):
+    dist = np.sqrt(np.sum((sat - rec) ** 2))
+    unit_vector = (sat - rec) / dist
+    return unit_vector
+
+def calculate_g_matrix(sat_position, rec_position):
+    G = []
+    for sat in sat_position:
+        unit_vector = calculate_distance_and_unit_vector(np.array(sat), np.array(rec_position))
+        G.append(unit_vector)
+    return np.array(G)
+
+def calculate_pdop(G):
+    G_transpose = G.T
+    GTG = np.dot(G_transpose, G)
+    GIN = np.linalg.inv(GTG)
+    GIN_MID = [GIN[i][i] for i in range(len(GIN))]
+    PDOP = np.sqrt(np.sum(GIN_MID))
+    return PDOP
+
+def calculate_pdop_from_pos(sat_position, rec_position):
+    G = calculate_g_matrix(sat_position, rec_position)
+    PDOP = calculate_pdop(G)
+    return PDOP
+
+def init_sat_obj(tle_file_path):
+    sat_obj = read_tle_file(tle_file_path)
+    print("TLE data read from file.")
+    return sat_obj
+
+def compute_ecef_positions(tle_file_path, year, month, day, hour, minute, second):
+    ini_sat_obj = init_sat_obj(tle_file_path)
+    position_data_ecef = compute_positions_ecef(ini_sat_obj, year, month, day, hour, minute, second)
+    return position_data_ecef
+
+def compute_neu_positions(ecef_list, origin_lat, origin_lon, origin_alt):
+    position_NEU = compute_positions_neu_direct(ecef_list, origin_lat, origin_lon, origin_alt)
+    return position_NEU
+
+def compute_azel_positions(neu_list):
+    az_el = compute_positions_azel_direct(neu_list)
+    return az_el
+
+def extract_ecef_pos(ecef_list):
+    ecef_pos = []
+    for i in range(len(ecef_list)):
+        ecef_pos.append(ecef_list[i][1:4])
+    return ecef_pos
+
+def cal_pdop(sat_position, rec_position):
+    G = []
+    GIN_MID = []
+    rec_position = np.array(rec_position, dtype=np.float64)  # Ensure rec_position is float64
+    for sat in sat_position:
+        sat = np.array(sat, dtype=np.float64)  # Ensure sat is float64
+        dist = np.sqrt(np.sum((sat - rec_position) ** 2))
+        unit_vector = (sat - rec_position) / dist
+        G.append(unit_vector)
+    G = np.array(G)
+    G_transpose = G.T
+    GTG = np.dot(G_transpose, G)
+    GIN = np.linalg.inv(GTG)
+    for i in range(len(GIN)):
+        GIN_MID.append(GIN[i][i])
+    PDOP = np.sqrt(np.sum(GIN_MID))
+
+    return PDOP
+
+def find_sat_in_view(az_el_list):
+    sat_in_view = []
+    for i in range(len(az_el_list)):
+        if az_el_list[i][2] > 10:
+            sat_in_view.append(az_el_list[i])
+    return sat_in_view
+
+def find_sat_total(az_el_list):
+    sat_total = []
+    for i in range(len(az_el_list)):
+        sat_total.append(az_el_list[i])
+    return sat_total

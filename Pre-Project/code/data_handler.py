@@ -1,24 +1,8 @@
 import Library_GNSS as GNSS
+import numpy as np
 
 tle_file_path = "F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt"
 
-def init_sat_obj(tle_file_path):
-    sat_obj = GNSS.read_tle_file(tle_file_path)
-    print("TLE data read from file.")
-    return sat_obj
-
-def compute_ecef_positions(year, month, day, hour, minute, second):
-    ini_sat_obj = init_sat_obj(tle_file_path)
-    position_data_ecef = GNSS.compute_positions_ecef(ini_sat_obj, year, month, day, hour, minute, second)
-    return position_data_ecef
-
-def compute_neu_positions(ecef_list, origin_lat, origin_lon):
-    position_NEU = GNSS.compute_positions_neu_direct(ecef_list, origin_lat, origin_lon)
-    return position_NEU
-
-def compute_azel_positions(neu_list):
-    az_el = GNSS.compute_positions_azel_direct(neu_list)
-    return az_el
 
 # Date and time for which the position is to be computed (UTC + 7)
 year = 2024
@@ -37,8 +21,23 @@ if hour_utc < 0:
 
 origin_lat = 13.683529
 origin_lon = 100.619786
+origin_alt = 0
 
 
-ecef_list = compute_ecef_positions(year, month, day, hour_utc, minute, second)
-neu_list = compute_neu_positions(ecef_list, origin_lat, origin_lon)
-az_el_list = compute_azel_positions(neu_list)
+ecef_list = GNSS.compute_ecef_positions(
+    tle_file_path, year, month, day, hour_utc, minute, second
+)
+pdop = (
+    GNSS.cal_pdop(
+        GNSS.extract_ecef_pos(ecef_list),
+        GNSS.latlon_to_ecef(origin_lat, origin_lon, origin_alt),
+    )
+    / 1000
+)
+neu_list = GNSS.compute_neu_positions(ecef_list, origin_lat, origin_lon, origin_alt)
+az_el_list = GNSS.compute_azel_positions(neu_list)
+sat_in_view = GNSS.find_sat_in_view(az_el_list)
+sat_total = GNSS.find_sat_total(az_el_list)
+print("Satellite total:", len(sat_total))
+print("Satellite in View:", len(sat_in_view))
+print("Predicted PDOP:", pdop)

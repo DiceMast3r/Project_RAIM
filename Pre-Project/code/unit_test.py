@@ -1,106 +1,38 @@
 import numpy as np
 
-origin_lat = 13.75
-origin_lon = 100.50
-receiver_alt = 20
+def cal(sat_position, rec_position):
+    G = []
+    GIN_MID = []
+    for sat in sat_position:
+        sat = np.array(sat)
+        rec = np.array(rec_position)
+        dist = np.sqrt(np.sum((sat - rec) ** 2))
+        unit_vector = (sat - rec) / dist
+        G.append(unit_vector)
+    G = np.array(G)
+    G_transpose = G.T
+    GTG = np.dot(G_transpose, G)
+    GIN = np.linalg.inv(GTG)
+    for i in range(len(GIN)):
+        GIN_MID.append(GIN[i][i])
+    PDOP = np.sqrt(np.sum(GIN_MID))
 
-def ecef_to_neu(ecef_coords, ref_coords):
-    """
-    Convert ECEF coordinates to NEU coordinates.
+    return PDOP
 
-    Parameters:
-    ecef_coords : tuple
-        ECEF coordinates (X, Y, Z) in kilometers.
-    ref_coords : tuple
-        Reference geodetic coordinates (latitude, longitude, height) in degrees and meters.
+satellites = [[ 8532065.95452706, 14260013.67111646 ,20824389.96600079],  # Satellite 1 position (ECEF, km)
+    [18563098.28901298 ,12967294.44940344 ,14116089.58051955],  
+    [ -3146907.66794293 , 21345011.4069616  ,-15371693.63628407],  
+    [-2050943.01571882, 21473513.16985594 ,15728950.24446666],
+    [ 4927103.41617994 ,24737345.12504125 ,-8298873.53700631],
+    [-10955005.67952687 , 11803466.06057115 , 20922579.19039785],
+    [-16912030.54640304 , 18704883.25753407  , 6621537.18943011],
+    [-14188696.27287192 , 22205510.17089337   , 371207.76784277],
+    [-10095045.0414692  , 12763050.32832661 ,-21130136.08814235],
+    [13053017.07709232, 21716090.20211055 ,-7196791.44883791]
+    ]
 
-    Returns:
-    neu_coords : tuple
-        NEU coordinates (North, East, Up) in kilometers.
-    """
-    # Extract ECEF coordinates
-    X, Y, Z = ecef_coords
-    X = X * 1000 # Convert to meters
-    Y = Y * 1000
-    Z = Z * 1000
 
-    # Extract reference geodetic coordinates (latitude, longitude in degrees)
-    lat_ref, lon_ref, h_ref = ref_coords
-
-    # Convert latitude and longitude to radians
-    lat_ref_rad = np.radians(lat_ref)
-    lon_ref_rad = np.radians(lon_ref)
-
-    # Compute the rotation matrix from ECEF to NEU
-    R = np.array([
-        [-np.sin(lat_ref_rad) * np.cos(lon_ref_rad), -np.sin(lat_ref_rad) * np.sin(lon_ref_rad), np.cos(lat_ref_rad)],
-        [-np.sin(lon_ref_rad), np.cos(lon_ref_rad), 0],
-        [np.cos(lat_ref_rad) * np.cos(lon_ref_rad), np.cos(lat_ref_rad) * np.sin(lon_ref_rad), np.sin(lat_ref_rad)]
-    ])
-
-    # Reference position in ECEF (X_ref, Y_ref, Z_ref)
-    a = 6378137.0  # Earth's semi-major axis (meters)
-    f = 1 / 298.257223563  # Earth's flattening
-    e2 = 2 * f - f ** 2  # Square of eccentricity
-
-    # Compute N (radius of curvature in the prime vertical)
-    N = a / np.sqrt(1 - e2 * np.sin(lat_ref_rad) ** 2)
-
-    X_ref = (N + h_ref) * np.cos(lat_ref_rad) * np.cos(lon_ref_rad)
-    Y_ref = (N + h_ref) * np.cos(lat_ref_rad) * np.sin(lon_ref_rad)
-    Z_ref = (N * (1 - e2) + h_ref) * np.sin(lat_ref_rad)
-
-    # Compute the difference in ECEF coordinates
-    delta_ecef = np.array([X - X_ref, Y - Y_ref, Z - Z_ref])
-
-    # Compute NEU coordinates
-    neu_coords = R @ delta_ecef
-    # Convert to kilometers
-    neu_coords = neu_coords / 1000
-
-    return tuple(neu_coords)
-
-def neu_to_az_el(neu_coords):
-    """
-    Convert NEU coordinates to Azimuth and Elevation.
-
-    Parameters:
-    neu_coords : tuple
-        NEU coordinates (North, East, Up) in meters.
-
-    Returns:
-    azimuth : float
-        Azimuth angle in degrees.
-    elevation : float
-        Elevation angle in degrees.
-    """
-    # Extract NEU components
-    N, E, U = neu_coords
-
-    # Compute Azimuth (in radians)
-    azimuth_rad = np.arctan2(E, N)
-    azimuth = np.degrees(azimuth_rad)
-    if azimuth < 0:
-        azimuth += 360
-
-    # Compute Elevation (in radians)
-    horizontal_distance = np.sqrt(N**2 + E**2)
-    elevation_rad = np.arctan2(U, horizontal_distance)
-    elevation = np.degrees(elevation_rad)
-
-    return azimuth, elevation
-
-# Example usage
-if __name__ == "__main__":
-    # Example ECEF coordinates (meters)
-    ecef_coords = (-18464.679145510465,7282.455658807237,17783.183271204365)
-
-    # Reference geodetic coordinates (latitude, longitude in degrees, height in meters)
-    ref_coords = (13.75, 100.5, 20.0) 
-
-    neu_coords = ecef_to_neu(ecef_coords, ref_coords)
-    print("NEU coordinates:", neu_coords)
-
-    azimuth, elevation = neu_to_az_el(neu_coords)
-    print("Azimuth:", azimuth, "degrees")
-    print("Elevation:", elevation, "degrees")
+receiver = [-1158298.689750454, 6087925.457297738, 1503753.4457173424]
+pdop = cal(satellites, receiver)
+print("Sat Number:", len(satellites))
+print("Predicted PDOP:", pdop)

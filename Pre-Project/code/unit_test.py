@@ -1,38 +1,27 @@
+import Library_GNSS as GNSS
 import numpy as np
 
-def cal(sat_position, rec_position):
-    G = []
-    GIN_MID = []
-    for sat in sat_position:
-        sat = np.array(sat)
-        rec = np.array(rec_position)
-        dist = np.sqrt(np.sum((sat - rec) ** 2))
-        unit_vector = (sat - rec) / dist
-        G.append(unit_vector)
-    G = np.array(G)
-    G_transpose = G.T
-    GTG = np.dot(G_transpose, G)
-    GIN = np.linalg.inv(GTG)
-    for i in range(len(GIN)):
-        GIN_MID.append(GIN[i][i])
-    PDOP = np.sqrt(np.sum(GIN_MID))
+def compute_satellite_data(year, month, day, hour, minute, second, origin_lat, origin_lon, origin_alt):
+    tle_file_path = "F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt"
+    
+    # Convert UTC+7 to UTC
+    hour_utc = hour - 7
+    if hour_utc < 0:
+        hour_utc += 24
+        day -= 1
 
-    return PDOP
+    ecef_list = GNSS.compute_ecef_positions(tle_file_path, year, month, day, hour_utc, minute, second)
+    neu_list = GNSS.compute_neu_positions(ecef_list, origin_lat, origin_lon, origin_alt)
+    az_el_list = GNSS.compute_azel_positions(neu_list)
+    sat_in_view = GNSS.find_sat_in_view(az_el_list)
+    sat_in_view_ECEF = GNSS.Az_El_to_ECEF(sat_in_view, origin_lat, origin_lon, origin_alt)
+    print(sat_in_view_ECEF)
+    sat_total = GNSS.find_sat_total(az_el_list)
+    return len(sat_in_view), len(sat_total)
 
-satellites = [[ 8532065.95452706, 14260013.67111646 ,20824389.96600079],  # Satellite 1 position (ECEF, km)
-    [18563098.28901298 ,12967294.44940344 ,14116089.58051955],  
-    [ -3146907.66794293 , 21345011.4069616  ,-15371693.63628407],  
-    [-2050943.01571882, 21473513.16985594 ,15728950.24446666],
-    [ 4927103.41617994 ,24737345.12504125 ,-8298873.53700631],
-    [-10955005.67952687 , 11803466.06057115 , 20922579.19039785],
-    [-16912030.54640304 , 18704883.25753407  , 6621537.18943011],
-    [-14188696.27287192 , 22205510.17089337   , 371207.76784277],
-    [-10095045.0414692  , 12763050.32832661 ,-21130136.08814235],
-    [13053017.07709232, 21716090.20211055 ,-7196791.44883791]
-    ]
+# Example usage:
+# compute_satellite_data(2024, 12, 12, 19, 20, 0, 13.683529, 100.619786, 0)
 
-
-receiver = [-1158298.689750454, 6087925.457297738, 1503753.4457173424]
-pdop = cal(satellites, receiver)
-print("Sat Number:", len(satellites))
-print("Predicted PDOP:", pdop)
+sat_view, sat_tot = compute_satellite_data(2024, 12, 22, 19, 25, 0, 13.683529, 100.619786, 0)
+print("Number of satellites in view:", sat_view)
+print("Total number of satellites:", sat_tot)

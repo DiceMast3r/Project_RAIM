@@ -1,5 +1,4 @@
 import Library_GNSS as GNSS
-import numpy as np
 
 def compute_satellite_data(year, month, day, hour, minute, second, origin_lat, origin_lon, origin_alt):
     tle_file_path = "F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt"

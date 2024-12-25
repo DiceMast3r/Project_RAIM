@@ -26,7 +26,7 @@ def geodetic_to_ecef(lat, lon, alt):
 
 
 # File path to save the TLE data
-file_path = 'F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt'
+file_path = 'D:\\Project_RAIM\\Pre-Project\\data\\TLE.txt'
 
 #GNSS.fetch_tle_data_txt(file_path)
 

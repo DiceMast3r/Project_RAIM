@@ -38,7 +38,7 @@ def predict_arrival_times(waypoints, speed_kmh, start_time):
     return arrival_times
 
 # File path to the CSV file
-file_path = "F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
+file_path = "D:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
 
 # List to store the waypoints
 waypoints = []

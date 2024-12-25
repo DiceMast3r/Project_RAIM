@@ -26,7 +26,7 @@ def geodetic_to_ecef(lat, lon, alt):
 
 
 # File path to save the TLE data
-file_path = 'F:\\Project_RAIM\\Pre-Project\\data\\TLE.txt'
+file_path = 'D:\\Project_RAIM\\Pre-Project\\data\\TLE.txt'
 
 #GNSS.fetch_tle_data_txt(file_path)
 
@@ -36,9 +36,9 @@ sat_obj = GNSS.read_tle_file(file_path)
 
 print("TLE data read from file.")
 
-ecef_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv"
-neu_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS_NEU.csv"
-azel_file = "F:\\Project_RAIM\\Pre-Project\\data\\AZEL.csv"
+ecef_file = "D:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv"
+neu_file = "D:\\Project_RAIM\\Pre-Project\\data\\POS_NEU.csv"
+azel_file = "D:\\Project_RAIM\\Pre-Project\\data\\AZEL.csv"
 
 # Date and time for which the position is to be computed (UTC + 7)
 year = 2024

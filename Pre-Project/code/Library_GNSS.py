@@ -50,6 +50,37 @@ def eci_to_ecef(r, jd, fr):
     return r_ecef
 
 
+def latlon_to_ecef(lat, lon, alt=0):
+    """
+    Convert latitude, longitude, and altitude to ECEF coordinates.
+
+    Parameters:
+        lat (float): Latitude in degrees.
+        lon (float): Longitude in degrees.
+        alt (float, optional): Altitude in meters above the WGS84 ellipsoid. Default is 0.
+
+    Returns:
+        tuple: A tuple (x, y, z) representing ECEF coordinates in meters.
+    """
+    # WGS84 ellipsoid constants
+    a = 6378137.0  # semi-major axis in meters
+    e2 = 6.69437999014e-3  # square of eccentricity
+
+    # Convert latitude and longitude to radians
+    lat_rad = np.radians(lat)
+    lon_rad = np.radians(lon)
+
+    # Calculate the prime vertical radius of curvature
+    N = a / np.sqrt(1 - e2 * np.sin(lat_rad) ** 2)
+
+    # Calculate ECEF coordinates
+    x = (N + alt) * np.cos(lat_rad) * np.cos(lon_rad)
+    y = (N + alt) * np.cos(lat_rad) * np.sin(lon_rad)
+    z = (N * (1 - e2) + alt) * np.sin(lat_rad)
+
+    return x, y, z
+
+
 def ecef_to_latlon(r_ecef):
     """
     Convert ECEF coordinates to geodetic latitude, longitude, and altitude.
@@ -75,49 +106,92 @@ def ecef_to_latlon(r_ecef):
     return lat, lon, alt
 
 
-def ECEF_to_NEU(x, y, z, lat, lon):
+def ECEF_to_NEU(x, y, z, lat, lon, height):
     """
-    Convert ECEF coordinates to local North-East-Up (NEU) coordinates.
+    Convert ECEF coordinates to NEU coordinates.
+
+    Parameters:
+    ecef_coords : tuple
+        ECEF coordinates (X, Y, Z) in kilometers.
+    ref_coords : tuple
+        Reference geodetic coordinates (latitude, longitude, height) in degrees and meters.
+
+    Returns:
+    neu_coords : tuple
+        NEU coordinates (North, East, Up) in kilometers.
     """
-    lat_rad = np.radians(lat)
-    lon_rad = np.radians(lon)
+    # Extract ECEF coordinates
+    X, Y, Z = x, y, z
+    X = X * 1000 # Convert to meters
+    Y = Y * 1000
+    Z = Z * 1000
 
-    cos_lat = np.cos(lat_rad)
-    sin_lat = np.sin(lat_rad)
-    cos_lon = np.cos(lon_rad)
-    sin_lon = np.sin(lon_rad)
+    # Extract reference geodetic coordinates (latitude, longitude in degrees)
+    lat_ref, lon_ref, h_ref = lat, lon, height
 
-    # Rotation matrix from ECEF to ENU
-    R = np.array(
-        [
-            [-sin_lon, cos_lon, 0],
-            [-sin_lat * cos_lon, -sin_lat * sin_lon, cos_lat],
-            [cos_lat * cos_lon, cos_lat * sin_lon, sin_lat],
-        ]
-    )
+    # Convert latitude and longitude to radians
+    lat_ref_rad = np.radians(lat_ref)
+    lon_ref_rad = np.radians(lon_ref)
 
-    r = np.array([x, y, z])
-    neu = np.dot(R, r)
-    return neu
+    # Compute the rotation matrix from ECEF to NEU
+    R = np.array([
+        [-np.sin(lat_ref_rad) * np.cos(lon_ref_rad), -np.sin(lat_ref_rad) * np.sin(lon_ref_rad), np.cos(lat_ref_rad)],
+        [-np.sin(lon_ref_rad), np.cos(lon_ref_rad), 0],
+        [np.cos(lat_ref_rad) * np.cos(lon_ref_rad), np.cos(lat_ref_rad) * np.sin(lon_ref_rad), np.sin(lat_ref_rad)]
+    ])
+
+    # Reference position in ECEF (X_ref, Y_ref, Z_ref)
+    a = 6378137.0  # Earth's semi-major axis (meters)
+    f = 1 / 298.257223563  # Earth's flattening
+    e2 = 2 * f - f ** 2  # Square of eccentricity
+
+    # Compute N (radius of curvature in the prime vertical)
+    N = a / np.sqrt(1 - e2 * np.sin(lat_ref_rad) ** 2)
+
+    X_ref = (N + h_ref) * np.cos(lat_ref_rad) * np.cos(lon_ref_rad)
+    Y_ref = (N + h_ref) * np.cos(lat_ref_rad) * np.sin(lon_ref_rad)
+    Z_ref = (N * (1 - e2) + h_ref) * np.sin(lat_ref_rad)
+
+    # Compute the difference in ECEF coordinates
+    delta_ecef = np.array([X - X_ref, Y - Y_ref, Z - Z_ref])
+
+    # Compute NEU coordinates
+    neu_coords = R @ delta_ecef # @ = Matrix multiplication
+    # Convert to kilometers
+    neu_coords = neu_coords / 1000
+
+    return tuple(neu_coords)
 
 
 def NEU_to_AZEL(n, e, u):
     """
-    Convert local North-East-Up (NEU) coordinates to Azimuth-Elevation (AZEL) angles.
+    Convert NEU coordinates to Azimuth and Elevation.
+
+    Parameters:
+    neu_coords : tuple
+        NEU coordinates (North, East, Up) in meters.
+
+    Returns:
+    azimuth : float
+        Azimuth angle in degrees.
+    elevation : float
+        Elevation angle in degrees.
     """
-    x, y, z = n, e, u
-    r = np.sqrt(x**2 + y**2 + z**2)
-    az = np.arctan2(x, y)
-    el = np.arcsin(z / r)
-    
-    # Convert azimuth and elevation to degrees
-    az_deg = np.degrees(az)
-    el_deg = np.degrees(el)
-    
-    # Normalize azimuth to be within 0° to 360°
-    az_deg = (az_deg + 360) % 360
-    
-    return az_deg, el_deg
+    # Extract NEU components
+    N, E, U = n, e, u
+
+    # Compute Azimuth (in radians)
+    azimuth_rad = np.arctan2(E, N)
+    azimuth = np.degrees(azimuth_rad)
+    if azimuth < 0:
+        azimuth += 360
+
+    # Compute Elevation (in radians)
+    horizontal_distance = np.sqrt(N**2 + E**2)
+    elevation_rad = np.arctan2(U, horizontal_distance)
+    elevation = np.degrees(elevation_rad)
+
+    return azimuth, elevation
 
 
 def read_tle_file(filename):
@@ -169,7 +243,7 @@ def compute_positions_ecef(satellites, year, month, day, hour, minute, second):
     return results
 
 
-def compute_positions_neu(ecef_file, origin_lat, origin_lon):
+def compute_positions_neu(ecef_file, origin_lat, origin_lon, origin_alt):
     """
     Compute the local North-East-Up (NEU) coordinates of each satellite.
     """
@@ -180,8 +254,18 @@ def compute_positions_neu(ecef_file, origin_lat, origin_lon):
 
         for row in reader:
             sat_id, x, y, z = row[0], float(row[1]), float(row[2]), float(row[3])
-            neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon)
+            neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon, origin_alt)
             positions.append((sat_id, neu[0], neu[1], neu[2]))
+    return positions
+
+def compute_positions_neu_direct(ecef_list, origin_lat, origin_lon, origin_alt):
+    """
+    Compute the local North-East-Up (NEU) coordinates of each satellite.
+    """
+    positions = []
+    for sat_id, x, y, z in ecef_list:
+        neu = ECEF_to_NEU(x, y, z, origin_lat, origin_lon, origin_alt)
+        positions.append((sat_id, neu[0], neu[1], neu[2]))
     return positions
 
 
@@ -198,6 +282,16 @@ def compute_positions_azel(neu_file):
             sat_id, n, e, u = row[0], float(row[1]), float(row[2]), float(row[3])
             az, el = NEU_to_AZEL(n, e, u)
             positions.append((sat_id, az, el))
+    return positions
+
+def compute_positions_azel_direct(neu_list):
+    """
+    Compute the Azimuth-Elevation (AZEL) angles of each satellite.
+    """
+    positions = []
+    for sat_id, n, e, u in neu_list:
+        az, el = NEU_to_AZEL(n, e, u)
+        positions.append((sat_id, az, el))
     return positions
 
 
@@ -311,12 +405,12 @@ def save_position_to_file_ecef(
                 )
 
 
-def save_positions_to_file_neu(positions, output_filename, origin_lat, origin_lon):
+def save_positions_to_file_neu(positions, output_filename, origin_lat, origin_lon, origin_alt):
     """
     Save the computed NEU positions to a CSV file.
     """
     with open(output_filename, "w", newline="") as csvfile:
-        fieldnames = ["Satellite", "North", "East", "Up", "Origin Latitude", "Origin Longitude"]
+        fieldnames = ["Satellite", "North", "East", "Up", "Origin Latitude", "Origin Longitude", "Origin Altitude"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()
@@ -328,7 +422,8 @@ def save_positions_to_file_neu(positions, output_filename, origin_lat, origin_lo
                     "East": e,
                     "Up": u,
                     "Origin Latitude": origin_lat,
-                    "Origin Longitude": origin_lon
+                    "Origin Longitude": origin_lon,
+                    "Origin Altitude": origin_alt
                 }
             )
 
@@ -351,3 +446,153 @@ def save_positions_to_file_azel(positions, output_filename, origin_lat, origin_l
                     "Origin Longitude": origin_lon
                 }
             )
+
+
+def calculate_distance_and_unit_vector(sat, rec):
+    dist = np.sqrt(np.sum((sat - rec) ** 2))
+    unit_vector = (sat - rec) / dist
+    return unit_vector
+
+def calculate_g_matrix(sat_position, rec_position):
+    G = []
+    for sat in sat_position:
+        unit_vector = calculate_distance_and_unit_vector(np.array(sat), np.array(rec_position))
+        G.append(unit_vector)
+    return np.array(G)
+
+def calculate_pdop(G):
+    G_transpose = G.T
+    GTG = np.dot(G_transpose, G)
+    GIN = np.linalg.inv(GTG)
+    GIN_MID = [GIN[i][i] for i in range(len(GIN))]
+    PDOP = np.sqrt(np.sum(GIN_MID))
+    return PDOP
+
+def calculate_pdop_from_pos(sat_position, rec_position):
+    G = calculate_g_matrix(sat_position, rec_position)
+    PDOP = calculate_pdop(G)
+    return PDOP
+
+def init_sat_obj(tle_file_path):
+    sat_obj = read_tle_file(tle_file_path)
+    #print("TLE data read from file.")
+    return sat_obj
+
+def compute_ecef_positions(tle_file_path, year, month, day, hour, minute, second):
+    ini_sat_obj = init_sat_obj(tle_file_path)
+    position_data_ecef = compute_positions_ecef(ini_sat_obj, year, month, day, hour, minute, second)
+    return position_data_ecef
+
+def compute_neu_positions(ecef_list, origin_lat, origin_lon, origin_alt):
+    position_NEU = compute_positions_neu_direct(ecef_list, origin_lat, origin_lon, origin_alt)
+    return position_NEU
+
+def compute_azel_positions(neu_list):
+    az_el = compute_positions_azel_direct(neu_list)
+    return az_el
+
+def extract_ecef_pos(ecef_list):
+    ecef_pos = []
+    for i in range(len(ecef_list)):
+        ecef_pos.append(ecef_list[i][1:4])
+    return ecef_pos
+
+def cal_pdop(sat_position, rec_position):
+    G = []
+    GIN_MID = []
+    rec_position = np.array(rec_position, dtype=np.float64)  # Ensure rec_position is float64
+    for sat in sat_position:
+        sat = np.array(sat, dtype=np.float64)  # Ensure sat is float64
+        dist = np.sqrt(np.sum((sat - rec_position) ** 2))
+        unit_vector = (sat - rec_position) / dist
+        G.append(unit_vector)
+    G = np.array(G)
+    G_transpose = G.T
+    GTG = np.dot(G_transpose, G)
+    GIN = np.linalg.inv(GTG)
+    for i in range(len(GIN)):
+        GIN_MID.append(GIN[i][i])
+    PDOP = np.sqrt(np.sum(GIN_MID))
+
+    return PDOP
+
+def find_sat_in_view(az_el_list):
+    sat_in_view = []
+    for i in range(len(az_el_list)):
+        if az_el_list[i][2] > 10:
+            sat_in_view.append(az_el_list[i])
+    return sat_in_view
+
+def find_sat_total(az_el_list):
+    sat_total = []
+    for i in range(len(az_el_list)):
+        sat_total.append(az_el_list[i])
+    return sat_total
+
+def az_el_to_neu(az, el, r):
+    """
+    Convert azimuth, elevation, and range to NEU coordinates.
+
+    Parameters:
+        az (float): Azimuth angle in degrees (clockwise from North).
+        el (float): Elevation angle in degrees.
+        r (float): Range (distance to target) in meters.
+
+    Returns:
+        tuple: A tuple (n, e, u) representing North, East, Up coordinates in meters.
+    """
+    # Convert azimuth and elevation to radians
+    az_rad = np.radians(az)
+    el_rad = np.radians(el)
+
+    # Calculate NEU components
+    n = r * np.cos(el_rad) * np.cos(az_rad)
+    e = r * np.cos(el_rad) * np.sin(az_rad)
+    u = r * np.sin(el_rad)
+
+    return n, e, u
+
+def neu_to_ecef(n, e, u, lat_ref, lon_ref, ecef_ref):
+    """
+    Convert NEU coordinates to ECEF coordinates.
+
+    Parameters:
+        n (float): North component in meters.
+        e (float): East component in meters.
+        u (float): Up component in meters.
+        lat_ref (float): Reference latitude in degrees.
+        lon_ref (float): Reference longitude in degrees.
+        ecef_ref (tuple): Reference ECEF coordinates (x, y, z) in meters.
+
+    Returns:
+        tuple: A tuple (x, y, z) representing ECEF coordinates in meters.
+    """
+    # Convert reference latitude and longitude to radians
+    lat_ref_rad = np.radians(lat_ref)
+    lon_ref_rad = np.radians(lon_ref)
+
+    # Compute the rotation matrix from NEU to ECEF
+    R = np.array([
+        [-np.sin(lat_ref_rad) * np.cos(lon_ref_rad), -np.sin(lon_ref_rad), np.cos(lat_ref_rad) * np.cos(lon_ref_rad)],
+        [-np.sin(lat_ref_rad) * np.sin(lon_ref_rad),  np.cos(lon_ref_rad), np.cos(lat_ref_rad) * np.sin(lon_ref_rad)],
+        [ np.cos(lat_ref_rad),                       0,                  np.sin(lat_ref_rad)]
+    ])
+
+    # Convert NEU to ECEF
+    neu = np.array([n, e, u])
+    ecef_offset = R.T @ neu  # Transpose for proper transformation
+    ecef = ecef_ref + ecef_offset
+
+    return tuple(ecef)
+
+
+def Az_El_to_ECEF(az_el_list, origin_lat, origin_lon, origin_alt, r=20200000):
+    ECEF_result = []
+    r = r - origin_alt
+    for i in range(len(az_el_list)):
+        n, e, u = az_el_to_neu(az_el_list[i][1], az_el_list[i][2], r)
+        ECEF = neu_to_ecef(n, e, u, origin_lat, origin_lon, origin_alt)
+        ECEF_result.append(ECEF)
+        
+    return ECEF_result
+    

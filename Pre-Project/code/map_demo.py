@@ -2,6 +2,7 @@ import folium
 import csv
 import math
 from datetime import datetime, timedelta
+import data_handler as dh
 
 # Function to calculate the distance between two points given their coordinates
 def calculate_distance(start, end):
@@ -10,9 +11,7 @@ def calculate_distance(start, end):
     METERS_TO_KM = 1 / 1000
 
     # Convert latitude and longitude from degrees to radians
-    lat1, lon1 = start
-    lat2, lon2 = end
-    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    lat1, lon1, lat2, lon2 = map(math.radians, [start[0], start[1], end[0], end[1]])
 
     # Calculate the change in coordinates
     dlat = lat2 - lat1
@@ -37,52 +36,67 @@ def predict_arrival_times(waypoints, speed_kmh, start_time):
         arrival_times.append(arrival_time)
     return arrival_times
 
-# File path to the CSV file
-file_path = "D:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
+# Function to read waypoints from a CSV file
+def read_waypoints(file_path):
+    waypoints = []
+    with open(file_path, mode='r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row
+        for row in reader:
+            name, latitude, longitude = row
+            waypoints.append((name, float(latitude), float(longitude)))
+    return waypoints
 
-# List to store the waypoints
-waypoints = []
+# Function to create a map with waypoints and lines between them
+def create_map(waypoints, map_center, map_zoom):
+    map_waypoint = folium.Map(location=map_center, zoom_start=map_zoom)
+    for name, latitude, longitude in waypoints:
+        folium.Marker(location=[latitude, longitude], popup=name).add_to(map_waypoint)
+    for i in range(len(waypoints) - 1):
+        start = waypoints[i][1], waypoints[i][2]
+        end = waypoints[i + 1][1], waypoints[i + 1][2]
+        folium.PolyLine(locations=[start, end], color='red').add_to(map_waypoint)
+    return map_waypoint
 
-# Open the CSV file and read the data
-with open(file_path, mode='r') as file:
-    reader = csv.reader(file)
-    next(reader)  # Skip the header row
+# Function to add arrival time and satellite data to map markers
+def add_marker_data(map_waypoint, waypoints, arrival_times):
+    for i in range(len(waypoints) - 1):
+        start = waypoints[i][1], waypoints[i][2]
+        distance = calculate_distance(start, waypoints[i + 1][1:3])
+        arrival_time = arrival_times[i].strftime("%Y-%m-%d %H:%M:%S")
+        year, month, day, hour, minute, second = arrival_times[i].timetuple()[:6]
+        pdop, sat_view, sat_tot = dh.compute_satellite_data(year, month, day, hour, minute, second, start[0], start[1], 0)
+        popup_content = f"{waypoints[i][0]}<br>Distance to next point: {distance:.2f} km<br>Arrival time: {arrival_time}<br>Predicted PDOP: {pdop:.5f}<br>Number of satellites in view: {sat_view}<br>Total number of satellites: {sat_tot}"
+        popup = folium.Popup(popup_content, max_width=300)
+        folium.Marker(location=start, popup=popup).add_to(map_waypoint)
+    # Handle the last waypoint separately
+    last_waypoint = waypoints[-1]
+    arrival_time = arrival_times[-1].strftime("%Y-%m-%d %H:%M:%S")
+    year, month, day, hour, minute, second = arrival_times[-1].timetuple()[:6]
+    pdop, sat_view, sat_tot = dh.compute_satellite_data(year, month, day, hour, minute, second, last_waypoint[1], last_waypoint[2], 0)
+    popup_content = f"{last_waypoint[0]}<br>Arrival time: {arrival_time}<br>Predicted PDOP: {pdop:.5f}<br>Number of satellites in view: {sat_view}<br>Total number of satellites: {sat_tot}"
+    popup = folium.Popup(popup_content, max_width=300)
+    folium.Marker(location=(last_waypoint[1], last_waypoint[2]), popup=popup).add_to(map_waypoint)
 
-    for row in reader:
-        name, latitude, longitude = row
-        waypoints.append((name, float(latitude), float(longitude)))
+def main():
+    # File path to the CSV file
+    file_path = "F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
+    waypoints = read_waypoints(file_path)
+    
+    # Create a map centered at the given latitude and longitude
+    map_center = [13.7563, 100.5018]
+    map_zoom = 5
+    map_waypoint = create_map(waypoints, map_center, map_zoom)
+    
+    # Predict arrival times
+    speed_kmh = 800.0  # Example speed in km/h
+    start_time = datetime.now()
+    arrival_times = predict_arrival_times(waypoints, speed_kmh, start_time)
+    
+    # Add marker data
+    add_marker_data(map_waypoint, waypoints, arrival_times)
+    
+    map_waypoint.show_in_browser()
 
-# Create a map centered at the given latitude and longitude
-map_center = [13.7563, 100.5018]
-map_zoom = 5
-map_title = "Map"
-
-# Create a map object using the specified parameters
-map_waypoint = folium.Map(location=map_center, zoom_start=map_zoom)
-
-# Add markers for each waypoint
-for name, latitude, longitude in waypoints:
-    folium.Marker(location=[latitude, longitude], popup=name).add_to(map_waypoint)
-
-# Draw lines between the waypoints
-for i in range(len(waypoints) - 1):
-    start = waypoints[i][1], waypoints[i][2]
-    end = waypoints[i + 1][1], waypoints[i + 1][2]
-    folium.PolyLine(locations=[start, end], color='red').add_to(map_waypoint)
-
-# Predict arrival times
-speed_kmh = 600.0  # Example speed in km/h
-start_time = datetime.now()
-arrival_times = predict_arrival_times(waypoints, speed_kmh, start_time)
-
-# Calculate the distance between the waypoints and show when the user clicks on the marker
-for i in range(len(waypoints) - 1):
-    start = waypoints[i][1], waypoints[i][2]
-    end = waypoints[i + 1][1], waypoints[i + 1][2]
-    distance = calculate_distance(start, end)
-    arrival_time = arrival_times[i].strftime("%Y-%m-%d %H:%M:%S")
-    popup_content = f"{waypoints[i][0]}<br>Distance to next point: {distance:.2f} km<br>Arrival time: {arrival_time}"
-    popup = folium.Popup(popup_content, max_width=300)  # Adjust the max_width as needed
-    folium.Marker(location=start, popup=popup).add_to(map_waypoint)
-
-map_waypoint.show_in_browser()
+if __name__ == "__main__":
+    main()

@@ -479,6 +479,7 @@ def init_sat_obj(tle_file_path):
     return sat_obj
 
 def compute_ecef_positions(tle_file_path, year, month, day, hour, minute, second):
+    #fetch_tle_data_txt(tle_file_path)
     ini_sat_obj = init_sat_obj(tle_file_path)
     position_data_ecef = compute_positions_ecef(ini_sat_obj, year, month, day, hour, minute, second)
     return position_data_ecef

@@ -1,5 +1,6 @@
 import firebase_admin
 from firebase_admin import firestore
+from firebase_admin import credentials
 import csv
 
 def read_waypoints(file_path):
@@ -22,7 +23,8 @@ def read_ecef_positions(file_path):
     return ecef_positions
 
 # Application Default credentials are automatically created.
-app = firebase_admin.initialize_app()
+cred = credentials.Certificate("F:\\Project_RAIM\\Pre-Project\\data\\test-raim-firebase-adminsdk-q50cn-65404c64e3.json")
+app = firebase_admin.initialize_app(cred)
 db = firestore.Client(project="test-raim") 
 
 '''doc_ref = db.collection("users").document("alovelace")
@@ -32,7 +34,7 @@ doc_ref = db.collection("users").document("aturing")
 doc_ref.set({"first": "Alan", "middle": "Mathison", "last": "Turing", "born": 1912})'''
 
 
-file_path = "F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
+'''file_path = "F:\\Project_RAIM\\Pre-Project\\data\\extracted_waypoints.csv"
 ecef_file = "F:\\Project_RAIM\\Pre-Project\\data\\POS_ECEF.csv"
 wp = read_waypoints(file_path)
 #print(wp)
@@ -55,13 +57,13 @@ for index, (name, x, y, z) in enumerate(ecef):
     doc_ref = db.collection("waypoints").document(waypoint_name).collection("ecef_positions").document(indexed_name)
     doc_ref.set({"x": x, "y": y, "z": z, "order": index})
     
-print("ECEF positions added to Firestore")
+print("ECEF positions added to Firestore")'''
 
 
 
 
-'''users_ref = db.collection("users")
+users_ref = db.collection("users")
 docs = users_ref.stream()
 
 for doc in docs:
-    print(f"{doc.id} => {doc.to_dict()}")'''
+    print(f"{doc.id} => {doc.to_dict()}")

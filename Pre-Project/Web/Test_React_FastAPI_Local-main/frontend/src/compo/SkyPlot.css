@@ -1,0 +1,52 @@
+.skyplot-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  position: fixed;
+  top: 10px;
+  left: 170px; /* ปรับตำแหน่งให้ปุ่มอยู่ข้างๆปุ่ม OutputBox */
+  z-index: 1500;
+}
+
+.new-box {
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  width: 300px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 350px;
+  left: 10px;
+  margin-top: 40px; /* เพิ่มระยะห่างด้านบนเพื่อไม่ให้ทับกับปุ่ม */
+}
+
+.label {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.skyplot-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.toggle-button {
+  position: absolute;
+  top: 10px;
+  left: 0px;
+  width: 40px; /* กำหนดความกว้างคงที่ */
+  height: 40px; /* กำหนดความสูงคงที่ */
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.toggle-button:hover {
+  background-color: #0056b3;
+}

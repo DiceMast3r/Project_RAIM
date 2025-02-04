@@ -1,0 +1,124 @@
+
+.output-box {
+  position: fixed;
+  top: 50px;
+  left: 10px;
+  padding: 20px;
+  background-color: #f0f8ff; /* เปลี่ยนสีพื้นหลัง */
+  border: 1px solid #000000; /* เปลี่ยนสีขอบ */
+  width: 300px; /* กำหนดความกว้าง */
+  height: auto; /* ปรับความสูงอัตโนมัติ */
+  border-radius: 15px; /* ทำให้กรอบโค้งมน */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* เพิ่มเงา */
+  display: flex;
+  flex-direction: column; /* จัดเรียงในแนวตั้ง */
+  justify-content: flex-start; /* จัดตำแหน่งในแนวนอน */
+  align-items: flex-start; /* จัดตำแหน่งในแนวตั้ง */
+}
+
+.output-image {
+  max-width: 100%; /* กำหนดความกว้างสูงสุดของรูปภาพ */
+  height: auto; /* ปรับความสูงอัตโนมัติ */
+  border-radius: 10px; /* ทำให้กรอบรูปภาพโค้งมน */
+}
+
+.top-right-box {
+  position: fixed;
+  top: 100px;
+  right: 10px;
+  padding: 20px;
+  background-color: #ffffff; /* เปลี่ยนสีพื้นหลัง */
+  border: 1px solid #000000; /* เปลี่ยนสีขอบ */
+  width: 300px; /* กำหนดความกว้าง */
+  height: auto; /* ปรับความสูงอัตโนมัติ */
+  border-radius: 15px; /* ทำให้กรอบโค้งมน */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* เพิ่มเงา */
+  display: flex;
+  flex-direction: column; /* จัดเรียงในแนวตั้ง */
+  justify-content: flex-start; /* จัดตำแหน่งในแนวนอน */
+  align-items: center; /* จัดตำแหน่งในแนวตั้ง */
+}
+
+.label {
+  margin-top: 10px; /* เพิ่มระยะห่างด้านบน */
+  font-weight: bold; /* ทำให้ตัวอักษรหนา */
+  color: #333; /* เปลี่ยนสีตัวอักษร */
+}
+
+.input-box {
+  margin-top: 5px; /* เพิ่มระยะห่างด้านบน */
+  padding: 10px; /* เพิ่ม padding */
+  width: 90%; /* กำหนดความกว้างของ input */
+  border: 1px solid #ccc; /* เปลี่ยนสีขอบ */
+  border-radius: 5px; /* ทำให้กรอบ input โค้งมน */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* เพิ่มเงาภายใน */
+  font-size: 16px; /* เปลี่ยนขนาดตัวอักษร */
+}
+
+.request-route-button {
+  margin-top: 20px; /* เพิ่มระยะห่างด้านบน */
+  padding: 10px 20px; /* เพิ่ม padding */
+  font-size: 16px; /* เปลี่ยนขนาดตัวอักษร */
+  color: #fff; /* เปลี่ยนสีตัวอักษร */
+  background-color: #007bff; /* เปลี่ยนสีพื้นหลัง */
+  border: none; /* ลบขอบ */
+  border-radius: 5px; /* ทำให้กรอบโค้งมน */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อ hover */
+  width: 300px; /* กำหนดความกว้างคงที่ */
+  height: 40px; /* กำหนดความสูงคงที่ */
+}
+
+.request-route-button:hover {
+  background-color: #0056b3; /* เปลี่ยนสีพื้นหลังเมื่อ hover */
+}
+
+.clear-route-button {
+  margin-top: 10px; /* เพิ่มระยะห่างด้านบน */
+  padding: 10px 20px; /* เพิ่ม padding */
+  font-size: 16px; /* เปลี่ยนขนาดตัวอักษร */
+  color: #fff; /* เปลี่ยนสีตัวอักษร */
+  background-color: #dc3545; /* เปลี่ยนสีพื้นหลัง */
+  border: none; /* ลบขอบ */
+  border-radius: 5px; /* ทำให้กรอบโค้งมน */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อ hover */
+  width: 300px; /* กำหนดความกว้างคงที่ */
+  height: 40px; /* กำหนดความสูงคงที่ */
+}
+
+.clear-route-button:hover {
+  background-color: #c82333; /* เปลี่ยนสีพื้นหลังเมื่อ hover */
+}
+
+.fas-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #28a745;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 300px; /* กำหนดความกว้างคงที่ */
+  height: 40px; /* กำหนดความสูงคงที่ */
+}
+
+.fas-button:hover {
+  background-color: #218838;
+}
+
+.ff-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #17a2b8;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 300px; /* กำหนดความกว้างคงที่ */
+  height: 40px; /* กำหนดความสูงคงที่ */
+}
+
+.ff-button:hover {
+  background-color: #138496;
+}

@@ -1,0 +1,49 @@
+.output-box-container {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 300px;
+  z-index: 1500;
+}
+
+.output-box {
+  position: fixed;
+  top: 45px;
+  left: 10px;
+  margin-top: 40px; /* เพิ่มระยะห่างด้านบนเพื่อไม่ให้ทับกับปุ่ม */
+  padding: 20px;
+  background-color: #ffffff; /* เปลี่ยนสีพื้นหลัง */
+  border: 1px solid #000000; /* เปลี่ยนสีขอบ */
+  width: 300px; /* กำหนดความกว้าง */
+  height: auto; /* ปรับความสูงอัตโนมัติ */
+  border-radius: 15px; /* ทำให้กรอบโค้งมน */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* เพิ่มเงา */
+  display: flex;
+  flex-direction: column; /* จัดเรียงในแนวตั้ง */
+  justify-content: flex-start; /* จัดตำแหน่งในแนวนอน */
+  align-items: flex-start; /* จัดตำแหน่งในแนวตั้ง */
+}
+
+.label {
+  margin-top: 10px; /* เพิ่มระยะห่างด้านบน */
+  font-weight: bold; /* ทำให้ตัวอักษรหนา */
+  color: #333; /* เปลี่ยนสีตัวอักษร */
+}
+
+.toggle-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 150px; /* กำหนดความกว้างคงที่ */
+  height: 40px; /* กำหนดความสูงคงที่ */
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.toggle-button:hover {
+  background-color: #0056b3;
+}

@@ -31,8 +31,8 @@ if num_sat >= 5:
     for i in range (len(satinview_ecefgroupX_1)):
         pdop = GNSS.cal_pdop(satinview_ecefgroupX_1[i], GNSS.latlon_to_ecef(origin_lat, origin_lon, origin_alt))
         pdopX1.append(pdop)
-    print(max(pdopX1))
-    #pdop5sat = np.array(GNSS.cal_pdop(satinview_ecef, GNSS.latlon_to_ecef(origin_lat, origin_lon, origin_alt)))
+    #print(len(pdopX1))
+    
     #pdop = 7
     #print(pdop) 
     if max(pdopX1) < 6:
@@ -50,8 +50,8 @@ if num_sat >= 6:
     for i in range (len(satinview_ecefgroupX_2)):
         pdop = GNSS.cal_pdop(satinview_ecefgroupX_2[i], GNSS.latlon_to_ecef(origin_lat, origin_lon, origin_alt))
         pdopX2.append(pdop)
-    print(max(pdopX2))
-    #pdop6sat = np.array(GNSS.cal_pdop(satinview_ecef, GNSS.latlon_to_ecef(origin_lat, origin_lon, origin_alt)))
+    #print(len(pdopX2))
+   
     #pdop = 7
     #print(pdop) 
     if max(pdopX2) < 6:
@@ -61,3 +61,20 @@ if num_sat >= 6:
         print("RAIM FDE Not Available")
 else:
     print("RAIM FDE Not Available")
+
+pdopAll = pdopX1 + pdopX2
+satellite_groups = satinview_ecefgroupX_1 + satinview_ecefgroupX_2
+
+# Combine PDOP values with their corresponding satellite groups
+pdop_with_satellites = list(zip(pdopAll, satellite_groups))
+
+# Sort the combined list by PDOP values
+pdop_with_satellites_sorted = sorted(pdop_with_satellites)
+
+# Get the lowest 3 and highest 3 PDOP values with their satellite groups
+lowest_3_pdop_with_satellites = pdop_with_satellites_sorted[:3]
+highest_3_pdop_with_satellites = pdop_with_satellites_sorted[-3:]
+
+print("PDOP: ", pdopAll)
+print("Lowest 3 PDOP values with satellite positions: ", lowest_3_pdop_with_satellites)
+print("Highest 3 PDOP values with satellite positions: ", highest_3_pdop_with_satellites)

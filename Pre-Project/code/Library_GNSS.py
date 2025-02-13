@@ -2,6 +2,7 @@ from sgp4.api import Satrec, jday
 import numpy as np
 import requests
 import csv
+from itertools import combinations
 
 
 def fetch_tle_data_txt(file_path):
@@ -479,7 +480,7 @@ def init_sat_obj(tle_file_path):
     return sat_obj
 
 def compute_ecef_positions(tle_file_path, year, month, day, hour, minute, second):
-    #fetch_tle_data_txt(tle_file_path)
+    fetch_tle_data_txt(tle_file_path)
     ini_sat_obj = init_sat_obj(tle_file_path)
     position_data_ecef = compute_positions_ecef(ini_sat_obj, year, month, day, hour, minute, second)
     return position_data_ecef
@@ -597,3 +598,28 @@ def Az_El_to_ECEF(az_el_list, origin_lat, origin_lon, origin_alt, r=20200000):
         
     return ECEF_result
     
+def combinationX_1(items):
+    r = len(items)-1
+    if r > len(items) or r < 0:
+        return "Invalid inputs: r must be a non-negative integer, and r ≤ len(items)."
+    
+    # คำนวณกลุ่มทั้งหมดที่เป็นไปได้
+    groups = list(combinations(items, r))
+    
+    # คำนวณจำนวนวิธีการจัด
+    count = len(groups)
+    
+    return groups 
+
+def combinationX_2(items):
+    r = len(items)-2
+    if r > len(items) or r < 0:
+        return "Invalid inputs: r must be a non-negative integer, and r ≤ len(items)."
+    
+    # คำนวณกลุ่มทั้งหมดที่เป็นไปได้
+    groups = list(combinations(items, r))
+    
+    # คำนวณจำนวนวิธีการจัด
+    count = len(groups)
+    
+    return groups 

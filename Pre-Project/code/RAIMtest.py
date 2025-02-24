@@ -11,7 +11,13 @@ origin_alt = 0
 #print(pdop)
 #print(len(satinview_ecef))
 num_sat = len(satinview_ecef)  
-print("Satellite in view: ",num_sat)   
+print("Satellite in view: ",num_sat)  
+
+pos_mode = False
+fd_mode = False
+fde_mode = False
+
+ 
 #num_sat = 5
 if num_sat >= 4:
     pdop4sat = GNSS.cal_pdop(satinview_ecef, GNSS.latlon_to_ecef(origin_lat, origin_lon, origin_alt))
@@ -19,11 +25,14 @@ if num_sat >= 4:
     #print(pdop) 
     if pdop4sat < 6:
         print("Position Available")
+        pos_mode = True
     else:
         print("PDOP too high")
         print("Position Not Available")
+        pos_mode = False
 else:
     print("Position Not Available")
+    pos_mode = False
 
 if num_sat >= 5:
     satinview_ecefgroupX_1 = GNSS.combinationX_1(satinview_ecef)
@@ -37,11 +46,14 @@ if num_sat >= 5:
     #print(pdop) 
     if max(pdopX1) < 6:
         print("RAIM FD Available")
+        fd_mode = True
     else:
         print("PDOP too high")
         print("RAIM FD Not Available")
+        fd_mode = False
 else:
     print("RAIM FD Not Available")
+    fd_mode = False
 
 
 if num_sat >= 6:
@@ -56,11 +68,21 @@ if num_sat >= 6:
     #print(pdop) 
     if max(pdopX2) < 6:
         print("RAIM FDE Available")
+        fde_mode = True
     else:
         print("PDOP too high")
         print("RAIM FDE Not Available")
+        fde_mode = False
 else:
     print("RAIM FDE Not Available")
+    fde_mode = False
+
+print("RAIM Position Mode: ", pos_mode)
+print("RAIM FD Mode: ", fd_mode)
+print("RAIM FDE Mode: ", fde_mode)
+
+
+
 
 pdopAll = pdopX1 + pdopX2
 satellite_groups = satinview_ecefgroupX_1 + satinview_ecefgroupX_2
@@ -75,6 +97,6 @@ pdop_with_satellites_sorted = sorted(pdop_with_satellites)
 lowest_3_pdop_with_satellites = pdop_with_satellites_sorted[:3]
 highest_3_pdop_with_satellites = pdop_with_satellites_sorted[-3:]
 
-print("PDOP: ", pdopAll)
-print("Lowest 3 PDOP values with satellite positions: ", lowest_3_pdop_with_satellites)
-print("Highest 3 PDOP values with satellite positions: ", highest_3_pdop_with_satellites)
+#print("PDOP: ", pdopAll)
+#print("Lowest 3 PDOP values with satellite positions: ", lowest_3_pdop_with_satellites)
+#print("Highest 3 PDOP values with satellite positions: ", highest_3_pdop_with_satellites)

@@ -9,7 +9,7 @@
 *.png
 *.docx
 *.json
-
+*.svg
 
 
 # Byte-compiled / optimized / DLL files
@@ -181,3 +181,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 Pre-Project/data/POS_ECEF.csv
+Pre-Project/doc/Report/overall-TLE.drawio.svg

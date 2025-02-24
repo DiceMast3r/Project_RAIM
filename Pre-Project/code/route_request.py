@@ -18,7 +18,7 @@ payload = {
     "minalt": "FL330",
     "maxalt": "FL390",
     "lvl": "B",
-    "dbid": "2412",
+    "dbid": "2501",
     "usesid": "Y",
     "usestar": "Y",
     "easet": "Y",

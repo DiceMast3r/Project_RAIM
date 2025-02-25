@@ -1,4 +1,3 @@
-
 from skyfield.api import Topos, load, wgs84
 from skyfield.sgp4lib import EarthSatellite
 import numpy as np
@@ -39,11 +38,15 @@ def read_tle_file(file_path):
         print(f"An error occurred: {e}")
         return {}
 
-def skyplot(lat, lon, TLE_Data,):
+def skyplot(lat, lon, TLE_Data, user_datetime=None):
     FONTSIZE=10
     # Create an observer location
     ts = load.timescale()
-    time = ts.now()
+    if user_datetime:
+        time = ts.utc(user_datetime.year, user_datetime.month, user_datetime.day, 
+                      user_datetime.hour, user_datetime.minute, user_datetime.second)
+    else:
+        time = ts.now()
     observer = Topos(latitude_degrees=lat, longitude_degrees=lon)
 
     # Initialize satellite objects and filter out PRN 01
@@ -65,10 +68,10 @@ def skyplot(lat, lon, TLE_Data,):
         topocentric = difference.at(time)
         alt, az, distance = topocentric.altaz()
 
-        if alt.degrees > 0:  # Only plot if above the horizon
+        if alt.degrees > 10:  # Only plot if above the horizon
             r = 90 - alt.degrees
             theta = np.radians(az.degrees)
-            ax.plot(theta, r, 'o', color='black')
+            ax.plot(theta, r, 'o', color='red')
             ax.text(theta, r, f'{sat}', fontsize=FONTSIZE, ha='right', va='bottom')
 
     # Add azimuth angle labels
@@ -101,4 +104,8 @@ def skyplot(lat, lon, TLE_Data,):
 
     # Show the plot
     plt.show()
+
+# Example usage:
+# user_datetime = datetime.datetime(2023, 10, 5, 15, 30, 0)
+# skyplot(lat, lon, TLE_Data, user_datetime)
 

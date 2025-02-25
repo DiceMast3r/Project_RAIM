@@ -42,7 +42,8 @@ def fetch_tle_data():
 def fetch_confirmation():
     current_time = datetime.now()
     while True:
-        user_input = input(f"Do you want to fetch the TLE data? Current time {current_time.strftime('%Y-%m-%d at %H:%M:%S')} (yes/no): ").strip().lower()
+        #user_input = input(f"Do you want to fetch the TLE data? Current time {current_time.strftime('%Y-%m-%d at %H:%M:%S')} (yes/no): ").strip().lower()
+        user_input = "no"
         if user_input in ["yes", "y"]:
             fetch_tle_data()
             print("Fetch data Done") 
